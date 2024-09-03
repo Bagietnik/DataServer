@@ -39,3 +39,4 @@ openssl s_client -connect localhost:9999 -cert fake_client_cert.pem -key fake_cl
 
 
 
+TEST
