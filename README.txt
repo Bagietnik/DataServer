@@ -19,6 +19,7 @@ openssl req -new -key client_key.pem -out client.csr / certificate signing reque
 
 openssl x509 -req -in client.csr -CA cert.pem -CAkey key.pem -CAcreateserial -out client_cert.pem -days 365 / self-signed CA. We will use the server's certificate as a certificate authority.
 
+
 openssl s_client -connect localhost:9999 -cert client_cert.pem -key client_key.pem / connection testing
 
 openssl x509 -in cert.pem -noout -text / cert info
@@ -38,5 +39,10 @@ openssl x509 -req -in fake_client.csr -CA fake_ca_cert.pem -CAkey fake_ca_key.pe
 openssl s_client -connect localhost:9999 -cert fake_client_cert.pem -key fake_client_key.pem -CAfile cert.pem
 
 
+Server interaction:
 
-TEST
+curl --cert client_cert.pem --key client_key.pem -k https://localhost:9998 / GET
+
+curl --cert client_cert.pem --key client_key.pem -k https://localhost:9998 -X POST -H "Content-Type: application/json" -d '{"number": 50}' / POST
+
+curl --cert /data/client_cert.pem --key /data/client_key.pem -k https://serverHTTPS:9998 -X POST -H "Content-Type: application/json" -d '{"number": 50}' /data -> node-red settings.js volume

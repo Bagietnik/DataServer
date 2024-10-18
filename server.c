@@ -24,13 +24,46 @@ typedef struct {
 connection_t connections[FD_SETSIZE];
 pthread_mutex_t connections_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+int current_number = 42;
+
+void send_response(SSL *ssl, const char *status, const char *content_type, const char *body) {
+    char response[BUFFER_SIZE];
+    snprintf(response, sizeof(response), 
+        "HTTP/1.1 %s\r\n"
+        "Content-Type: %s\r\n"
+        "Content-Length: %zu\r\n"
+        "\r\n"
+        "%s", status, content_type, strlen(body), body);
+    SSL_write(ssl, response, strlen(response));
+}
+
 void handle_client(SSL *ssl) {
-    const char *json_message = "{\"status\": \"ok\", \"message\": \"Hello from secure server!\"}";
+    char buffer[BUFFER_SIZE] = {0};
+    SSL_read(ssl, buffer, sizeof(buffer) - 1);
 
-    SSL_write(ssl, json_message, strlen(json_message));
+    if (strncmp(buffer, "GET", 3) == 0) {
+        char json_response[BUFFER_SIZE];
+        snprintf(json_response, sizeof(json_response), "{\"number\": %d}", current_number);
+        send_response(ssl, "200 OK", "application/json", json_response);
 
-    //SSL_shutdown(ssl);
-    //SSL_free(ssl);
+    } else if (strncmp(buffer, "POST", 4) == 0) {
+        char *body = strstr(buffer, "\r\n\r\n");
+        if (body != NULL) {
+            body += 4;
+
+            int new_number;
+            if (sscanf(body, "{\"number\": %d}", &new_number) == 1) {
+                current_number = new_number;
+                send_response(ssl, "200 OK", "application/json", "{\"status\": \"Number updated\"}");
+            } else {
+                send_response(ssl, "400 Bad Request", "application/json", "{\"error\": \"Invalid request format\"}");
+            }
+        } else {
+            send_response(ssl, "400 Bad Request", "application/json", "{\"error\": \"No body provided\"}");
+        }
+    } else {
+        send_response(ssl, "405 Method Not Allowed", "application/json", "{\"error\": \"Method not allowed\"}");
+    }
 }
 
 void *server_thread(void *arg) {
@@ -87,7 +120,6 @@ void *server_thread(void *arg) {
                 X509_free(client_cert);
 
                 if (SSL_get_verify_result(ssl) == X509_V_OK) {
-                   
                     pthread_mutex_lock(&connections_mutex);
                     for (int i = 0; i < FD_SETSIZE; i++) {
                         if (connections[i].socket == 0) {
