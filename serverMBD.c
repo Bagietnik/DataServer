@@ -36,8 +36,8 @@ void log_connection(const char *client_ip, int client_port) {
     }
 
     time_t now = time(NULL);
-    char *time_str = ctime(&now);  // Pobranie aktualnego czasu
-    time_str[strlen(time_str) - 1] = '\0';  // Usunięcie znaku nowej linii
+    char *time_str = ctime(&now); 
+    time_str[strlen(time_str) - 1] = '\0';
 
     fprintf(log_file, "[%s] Accepted connection from %s:%d\n", time_str, client_ip, client_port);
     fclose(log_file);
@@ -214,8 +214,9 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    //SSL_CTX_set_min_proto_version(ctx, TLS1_3_VERSION);
-    //SSL_CTX_set_max_proto_version(ctx, TLS1_3_VERSION);
+    // Ustawienie opcji, aby tylko TLS 1.3 było wspierane (opcjonalnie)
+    SSL_CTX_set_min_proto_version(ctx, TLS1_3_VERSION);
+    SSL_CTX_set_max_proto_version(ctx, TLS1_3_VERSION);
 
     if (SSL_CTX_use_certificate_file(ctx, "cert.pem", SSL_FILETYPE_PEM) <= 0) {
         ERR_print_errors_fp(stderr);

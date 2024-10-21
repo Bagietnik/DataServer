@@ -10,6 +10,14 @@ openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -node
 
 gcc -o server server.c -lssl -lcrypto / compilation
 
+gcc -o server server.c -lmbedtls -lmbedcrypto -lmbedx509 / compilation (mbedTLS)
+
+sudo apt-get install libmbedtls-dev
+
+curl --cert client_cert.pem --key client_key.pem -k https://172.18.0.6:9999 //rpi
+
+curl --cert client_cert.pem --key client_key.pem -k https://192.168.100.21:9999 //host
+
 
 Client: 
 
@@ -43,6 +51,6 @@ Server interaction:
 
 curl --cert client_cert.pem --key client_key.pem -k https://localhost:9998 / GET
 
-curl --cert client_cert.pem --key client_key.pem -k https://localhost:9998 -X POST -H "Content-Type: application/json" -d '{"number": 50}' / POST
+curl --cert client_cert.pem --key client_key.pem -k https://localhost:9999 -X POST -H "Content-Type: application/json" -d '{"number1": 50, "number2": 42}' / POST
 
 curl --cert /data/client_cert.pem --key /data/client_key.pem -k https://serverHTTPS:9998 -X POST -H "Content-Type: application/json" -d '{"number": 50}' /data -> node-red settings.js volume
