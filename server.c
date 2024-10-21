@@ -14,7 +14,7 @@
 #define PORT 9999
 #define BUFFER_SIZE 1024
 #define TIMEOUT 60 
-#define LOG_FILE "server_log.txt"  // Plik logów
+#define LOG_FILE "server_log.txt"
 
 typedef struct {
     int socket;
@@ -36,8 +36,8 @@ void log_connection(const char *client_ip, int client_port) {
     }
 
     time_t now = time(NULL);
-    char *time_str = ctime(&now);  // Pobranie aktualnego czasu
-    time_str[strlen(time_str) - 1] = '\0';  // Usunięcie znaku nowej linii
+    char *time_str = ctime(&now); 
+    time_str[strlen(time_str) - 1] = '\0';
 
     fprintf(log_file, "[%s] Accepted connection from %s:%d\n", time_str, client_ip, client_port);
     fclose(log_file);
@@ -123,7 +123,6 @@ void *server_thread(void *arg) {
             continue;
         }
 
-        // Zalogowanie połączenia
         log_connection(inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 
         printf("Accepted connection from %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
